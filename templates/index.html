@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .video-container,
+        .output-container {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            background: #e3e3e3;
+        }
+
+        .video-container img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .output-container {
+            font-size: 24px;
+            font-weight: bold;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-line;
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            background: #28a745;
+            color: white;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Real-Time Sign Language Recognition</h1>
+
+    <div class="container">
+        <!-- Video Feed -->
+        <div class="video-container">
+            <img id="video-feed" src="{{ url_for('video_feed') }}">
+        </div>
+
+        <!-- Recognized Sign Output -->
+        <div class="output-container">
+            <h2>Recognized Text:</h2>
+            <div id="recognized-text">-</div>
+        </div>
+    </div>
+
+    <!-- Control Button -->
+    <div class="controls">
+        <button onclick="clearText()">Clear</button>
+    </div>
+
+    <script>
+        function fetchRecognizedText() {
+            fetch('/recognized_text')
+                .then(response => response.json())
+                .then(data => {
+                    let textContainer = document.getElementById('recognized-text');
+                    let maxCharsPerLine = 15;
+
+                    let words = data.recognized_text.split(" ");
+                    let formattedText = "";
+                    let line = "";
+
+                    for (let i = 0; i < words.length; i++) {
+                        if ((line + words[i]).length > maxCharsPerLine) {
+                            formattedText += line + "<br>";
+                            line = words[i] + " ";
+                        } else {
+                            line += words[i] + " ";
+                        }
+                    }
+                    formattedText += line;
+                    textContainer.innerHTML = formattedText;
+                });
+        }
+        setInterval(fetchRecognizedText, 2000);
+
+        function clearText() {
+            fetch('/clear').then(() => {
+                document.getElementById('recognized-text').innerHTML = "-";
+            });
+        }
+    </script>
+</body>
+
+</html>
